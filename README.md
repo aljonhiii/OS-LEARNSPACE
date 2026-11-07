@@ -17,12 +17,13 @@ It implements authentic database-driven authentication, strict Role-Based Access
 2. [Key Features by Role](#-key-features-by-role)
 3. [Technology Stack](#-technology-stack)
 4. [Prerequisites](#-prerequisites)
-5. [Installation & Setup](#-installation--setup)
-6. [Database Initialization](#-database-initialization)
-7. [Running the Application](#-running-the-application)
-8. [Automated Verification Suites](#-automated-verification-suites)
-9. [Project Architecture](#-project-architecture)
-10. [Security & Access Control](#-security--access-control)
+5. [Virtual Machine & Database Setup (VirtualBox / Ubuntu VM)](#-virtual-machine--database-setup-virtualbox--ubuntu-vm)
+6. [Installation & Setup](#-installation--setup)
+7. [Database Initialization](#-database-initialization)
+8. [Running the Application](#-running-the-application)
+9. [Automated Verification Suites](#-automated-verification-suites)
+10. [Project Architecture](#-project-architecture)
+11. [Security & Access Control](#-security--access-control)
 
 ---
 
@@ -108,6 +109,148 @@ Ensure you have the following installed on your machine:
 - **Node.js** (v18.0.0 or higher, v20+ recommended)
 - **npm** (v9+ or higher)
 - **MariaDB** or **MySQL** server running locally or accessible over the network
+
+---
+
+## 🖥 Virtual Machine & Database Setup (VirtualBox / Ubuntu VM)
+
+If your MariaDB database is hosted in an **Ubuntu Virtual Machine (VirtualBox)** while your application runs in **WSL / VS Code / Windows Host**, follow this step-by-step guide to configure network connectivity and allow remote database connections.
+
+### Step 1: Configure VirtualBox Network Adapter
+To allow your host machine and WSL to reach the Virtual Machine directly via an IP address:
+1. Open **VirtualBox** and select your Ubuntu VM (ensure it is powered off).
+2. Go to **Settings** → **Network** → **Adapter 1**.
+3. Set **Attached to:** to **Bridged Adapter**.
+4. In **Name:**, select your active physical network adapter (Wi-Fi or Ethernet).
+5. Click **OK** and start your Virtual Machine.
+
+> **Alternative (NAT with Port Forwarding):** If you prefer keeping the default **NAT** adapter:
+> Go to **Settings** → **Network** → **Advanced** → **Port Forwarding** and add a rule:
+> - Name: `MariaDB`
+> - Protocol: `TCP`
+> - Host IP: `127.0.0.1` | Host Port: `3306`
+> - Guest IP: *(leave blank)* | Guest Port: `3306`
+
+---
+
+### Step 2: Install MariaDB on Ubuntu VM
+Inside your Ubuntu VM terminal, install and start MariaDB:
+```bash
+sudo apt update
+sudo apt install mariadb-server -y
+
+# Enable and start the service
+sudo systemctl enable mariadb
+sudo systemctl start mariadb
+
+# Verify service is running
+sudo systemctl status mariadb
+```
+
+---
+
+### Step 3: Configure MariaDB to Listen on All Network Interfaces
+By default, MariaDB only listens locally on `127.0.0.1`. You must change this so your host and WSL can connect:
+1. Open the MariaDB configuration file:
+   ```bash
+   sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf
+   ```
+2. Locate the line:
+   ```ini
+   bind-address = 127.0.0.1
+   ```
+3. Change it to `0.0.0.0`:
+   ```ini
+   bind-address = 0.0.0.0
+   ```
+4. Save and exit (`Ctrl + O`, `Enter`, then `Ctrl + X`).
+5. Restart the MariaDB service:
+   ```bash
+   sudo systemctl restart mariadb
+   ```
+
+---
+
+### Step 4: Create Database, User, and Grant Remote Privileges
+Log into MariaDB inside the Ubuntu VM as root:
+```bash
+sudo mariadb -u root
+```
+
+Run the following SQL commands to create the database, user, and permissions for remote access from any host (`'%'`):
+```sql
+-- 1. Create database
+CREATE DATABASE IF NOT EXISTS app_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 2. Create remote user (replace 'your_password' with your desired password)
+CREATE USER 'aljon'@'%' IDENTIFIED BY 'your_password';
+
+-- 3. Grant full privileges to the database
+GRANT ALL PRIVILEGES ON app_db.* TO 'aljon'@'%';
+
+-- 4. Apply privilege changes
+FLUSH PRIVILEGES;
+
+-- 5. Exit MariaDB
+EXIT;
+```
+
+---
+
+### Step 5: Configure Ubuntu Firewall (UFW)
+Allow traffic on MariaDB port `3306`:
+```bash
+# Allow from any IP on port 3306:
+sudo ufw allow 3306/tcp
+
+# Or allow only from your local subnet (recommended):
+# sudo ufw allow from 192.168.1.0/24 to any port 3306
+
+sudo ufw reload
+```
+
+---
+
+### Step 6: Find Your Virtual Machine IP Address
+Inside the Ubuntu VM terminal, find its assigned IP address:
+```bash
+hostname -I
+# or: ip a
+```
+*Example IP output: `192.168.1.32`*
+
+---
+
+### Step 7: Test Connection from WSL / VS Code / Host
+In your WSL or host terminal, test whether the port is open and accessible:
+```bash
+# Test network port reachability:
+nc -zv 192.168.1.32 3306
+
+# Or test MariaDB connection directly:
+mariadb -h 192.168.1.32 -u aljon -p -e "STATUS;"
+```
+If successful, you will see `Connection to 192.168.1.32 port 3306 [tcp/mysql] succeeded!` and the MariaDB server version.
+
+---
+
+### Step 8: Connect LearnSpace to Your VM Database
+In your project directory, set your VM IP in `server/.env`:
+```env
+PORT=5000
+DB_HOST=192.168.1.32      # IP address of your Ubuntu VM
+DB_PORT=3306
+DB_USER=aljon
+DB_PASSWORD=your_password
+DB_NAME=app_db
+JWT_SECRET=learnspace-secret-key-2026
+```
+
+Now you can run database initialization:
+```bash
+npm run init-db
+# or import: mariadb -h 192.168.1.32 -u aljon -p app_db < schema.sql
+```
 
 ---
 
