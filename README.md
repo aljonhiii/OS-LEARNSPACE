@@ -157,11 +157,23 @@ Create the database in MariaDB/MySQL if it does not already exist:
 CREATE DATABASE IF NOT EXISTS app_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-Run the automated database setup script to create all 28 tables and seed initial accounts, courses, lessons, assignments, and quizzes:
+You can initialize the database using either of the following approaches:
+
+#### Option A: Automated Node Initializer
 ```bash
 npm run init-db
+# (Alternatively: node server/scripts/init-db.js)
 ```
-*(Alternatively: `node server/scripts/init-db.js`)*
+
+#### Option B: Direct SQL Import (`schema.sql`)
+The repository includes a ready-to-import [`schema.sql`](schema.sql) file containing all DDL table structures, indexes, foreign keys, and seed data:
+```bash
+# Using MariaDB CLI:
+mariadb -u your_db_user -p app_db < schema.sql
+
+# Using MySQL CLI:
+mysql -u your_db_user -p app_db < schema.sql
+```
 
 ---
 
