@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Search, Filter, BookOpen, CheckCircle, Mail, GraduationCap, X, Award } from 'lucide-react';
+import { formatPhDate } from '../../utils/dateUtils';
 
 export default function TeacherRoster() {
   const [enrollments, setEnrollments] = useState([]);
@@ -149,7 +150,7 @@ export default function TeacherRoster() {
                       </span>
                     </td>
                     <td className="py-3.5 px-4 font-mono text-[11px] text-slate-500">
-                      {new Date(enr.enrolled_at).toLocaleDateString()}
+                      {formatPhDate(enr.enrolled_at)}
                     </td>
                     <td className="py-3.5 px-4">
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 capitalize">
@@ -214,7 +215,7 @@ export default function TeacherRoster() {
 
               <div className="flex justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-400">Enrollment Date</span>
-                <span className="font-mono text-slate-800">{new Date(selectedStudent.enrolled_at).toLocaleDateString()}</span>
+                <span className="font-mono text-slate-800">{formatPhDate(selectedStudent.enrolled_at)}</span>
               </div>
               <div className="flex justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-400">Status</span>

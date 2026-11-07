@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, Plus, Pin, CheckCircle, Clock, X, Search, BookOpen } from 'lucide-react';
+import { formatPhDate } from '../../utils/dateUtils';
 
 export default function TeacherAnnouncements() {
   const [announcements, setAnnouncements] = useState([]);
@@ -148,7 +149,7 @@ export default function TeacherAnnouncements() {
                       <span>•</span>
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {new Date(a.published_at || a.created_at).toLocaleDateString()}
+                        {formatPhDate(a.published_at || a.created_at)}
                       </span>
                     </div>
                   </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Plus, Trash2, Calendar, Award, CheckCircle, Clock, ExternalLink, X, Search } from 'lucide-react';
+import { formatPhDate } from '../../utils/dateUtils';
 
 export default function TeacherAssignments({ setActivePage, setSelectedAssignmentId }) {
   const [assignments, setAssignments] = useState([]);
@@ -197,7 +198,7 @@ export default function TeacherAssignments({ setActivePage, setSelectedAssignmen
                 <div className="flex items-center gap-4 pt-2 text-xs text-slate-500 border-t border-slate-100">
                   <div className="flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5 text-amber-500" />
-                    <span>Due: {a.due_at ? new Date(a.due_at).toLocaleDateString() : 'Self-paced'}</span>
+                    <span>Due: {a.due_at ? formatPhDate(a.due_at) : 'Self-paced'}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />

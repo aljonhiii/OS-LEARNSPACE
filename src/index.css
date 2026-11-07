@@ -7,6 +7,10 @@
     --font-mono: 'JetBrains Mono', monospace;
   }
 
+  html {
+    zoom: 1.05; /* Gentle 5% enlargement so the UI is comfortable, clear, and not too zoomed out */
+  }
+
   body {
     font-family: var(--font-sans);
     background-color: #1D4ED8; /* Royal Blue outer background matching screenshot */

@@ -1,18 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   GraduationCap, Bell, MessageSquare, HelpCircle, 
   LayoutDashboard, BookMarked, FolderGit2, Users, Star, 
   Wallet, Sparkles, Settings, Menu, X, CheckCircle, 
   Award, Shield, FileText, ChevronRight, LogOut,
-  Layers, CheckSquare, Calendar, BarChart2, ShieldAlert
+  Layers, CheckSquare, Calendar, BarChart2, ShieldAlert,
+  Search
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import BadgeShield from '../common/BadgeShield';
+import BrandLogo from '../common/BrandLogo';
+import GlobalSearchModal from '../common/GlobalSearchModal';
+import { getPhNow } from '../../utils/dateUtils';
 
 export default function AppShell({ activePage, setActivePage, children }) {
   const { currentUser, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifDropdown, setNotifDropdown] = useState(false);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [phClock, setPhClock] = useState(() => getPhNow().timeStr);
+
+  // Live Philippine Standard Time ticker
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPhClock(getPhNow().timeStr);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Global Command+K / Ctrl+K shortcut listener
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchModalOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const role = currentUser?.role || 'teacher';
 
@@ -70,14 +96,16 @@ export default function AppShell({ activePage, setActivePage, children }) {
   };
 
   const navItems = getNavItems();
+  const activeItem = navItems.find((item) => item.id === activePage);
+  const activePageLabel = activeItem ? activeItem.label : 'Overview';
 
   return (
     <div className="w-full min-h-screen bg-[#F0F4FA] flex flex-col font-sans selection:bg-blue-200">
       
-      {/* FULL-WIDTH TOPBAR NAVIGATION */}
-      <header className="w-full bg-white border-b border-slate-200 px-4 sm:px-6 py-3 flex items-center justify-between gap-4 sticky top-0 z-40 shadow-xs">
+      {/* FULL-WIDTH TOPBAR NAVIGATION — Minimalist, Clean & Understated */}
+      <header className="w-full bg-white border-b border-slate-200/80 px-4 sm:px-6 py-2.5 flex items-center justify-between gap-4 sticky top-0 z-40">
         
-        {/* Brand Logo matching screenshot */}
+        {/* Brand & Breadcrumb */}
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -87,44 +115,87 @@ export default function AppShell({ activePage, setActivePage, children }) {
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-          <div 
+          <BrandLogo 
+            variant="dark" 
+            className="h-8.5" 
+            interactive 
             onClick={() => setActivePage(role === 'admin' ? 'admin-dashboard' : role === 'student' ? 'student-dashboard' : 'teacher-dashboard')}
-            className="flex items-center gap-2.5 cursor-pointer"
-          >
-            <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-sm shadow-blue-500/30">
-              <GraduationCap className="w-5 h-5" />
-            </div>
-            <div className="flex items-baseline">
-              <span className="font-heading text-xl font-bold tracking-tight text-blue-600">learn</span>
-              <span className="font-heading text-xl font-bold tracking-tight text-slate-800">space</span>
-            </div>
+          />
+
+          {/* Understated Context Breadcrumb */}
+          <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-slate-200/80 text-xs">
+            <span className="text-slate-400">/</span>
+            <span className="text-slate-600 font-medium truncate max-w-[180px] sm:max-w-none">
+              {activePageLabel}
+            </span>
           </div>
         </div>
 
-        {/* Right Topbar Actions matching screenshot */}
-        <div className="flex items-center gap-3">
+        {/* Interactive Quick Search Trigger */}
+        <div 
+          onClick={() => setSearchModalOpen(true)}
+          className="hidden md:flex items-center relative w-60 xl:w-72 cursor-pointer group"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSearchModalOpen(true); }}
+        >
+          <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 absolute left-3 pointer-events-none transition-colors" />
+          <input 
+            type="text" 
+            readOnly 
+            placeholder="Search coursework... ⌘K" 
+            className="w-full pl-8.5 pr-3 py-1.5 bg-slate-50 hover:bg-slate-100/90 border border-slate-200/80 rounded-xl text-xs text-slate-600 placeholder-slate-400 transition-colors cursor-pointer select-none focus:outline-none"
+          />
+        </div>
+
+        {/* Right Topbar Actions */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          
+          {/* Live Philippine Standard Time Badge for Faculty */}
+          {role === 'teacher' && (
+            <div 
+              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-mono text-slate-700 select-none"
+              title="Philippine Standard Time (PST / PHT • UTC+8)"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="text-[10px] font-sans font-bold text-slate-400 uppercase">PHT</span>
+              <span className="font-bold text-slate-800">{phClock}</span>
+            </div>
+          )}
+          
+          {/* Mobile Quick Search Button */}
+          <button 
+            onClick={() => setSearchModalOpen(true)}
+            className="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+            aria-label="Search"
+          >
+            <Search className="w-4 h-4" />
+          </button>
           
           <button 
             onClick={() => setActivePage(role === 'teacher' ? 'teacher-discussions' : 'student-announcements')}
-            className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 px-2.5 py-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+            className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-blue-600 px-2.5 py-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
           >
-            <MessageSquare className="w-4 h-4 text-blue-500" />
-            <span>Chat</span>
+            <MessageSquare className="w-4 h-4 text-slate-400" />
+            <span>Discussions</span>
           </button>
 
           {/* Notifications */}
           <div className="relative">
             <button 
               onClick={() => setNotifDropdown(!notifDropdown)}
-              className="relative p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-50 rounded-full transition-colors cursor-pointer"
+              className="relative p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
               aria-label="Notifications"
             >
               <Bell className="w-4 h-4" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full"></span>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full ring-2 ring-white"></span>
             </button>
 
             {notifDropdown && (
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 p-4 z-50">
+              <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 p-4 z-50 animate-in fade-in zoom-in-95">
                 <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
                   <span className="font-heading text-xs font-bold text-slate-800">In-App Notifications</span>
                   <span className="text-[10px] text-blue-600 font-medium">3 unread</span>
@@ -143,13 +214,21 @@ export default function AppShell({ activePage, setActivePage, children }) {
             )}
           </div>
 
-          {/* User Avatar & Logout */}
-          <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+          {/* User Profile & Logout */}
+          <div className="flex items-center gap-2 pl-2 border-l border-slate-200/80">
             <img 
               src={currentUser?.avatar_url || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"} 
               alt={currentUser?.first_name} 
-              className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-100"
+              className="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200"
             />
+            <div className="hidden sm:block text-left pr-1">
+              <p className="text-xs font-semibold text-slate-800 leading-tight">
+                {currentUser?.first_name} {currentUser?.last_name?.[0]}.
+              </p>
+              <p className="text-[10px] text-slate-400 leading-tight capitalize">
+                {role}
+              </p>
+            </div>
             <button
               onClick={logout}
               title="Logout"
@@ -278,6 +357,14 @@ export default function AppShell({ activePage, setActivePage, children }) {
         </main>
 
       </div>
+
+      {/* GLOBAL COMMAND PALETTE SEARCH MODAL (⌘K / Ctrl+K) */}
+      <GlobalSearchModal 
+        isOpen={searchModalOpen} 
+        onClose={() => setSearchModalOpen(false)} 
+        onNavigate={setActivePage}
+        role={role}
+      />
 
     </div>
   );

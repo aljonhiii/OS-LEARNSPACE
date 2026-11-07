@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, Plus, Send, Clock, User, CheckCircle, X, Search, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { formatPhDate, formatPhTime } from '../../utils/dateUtils';
 
 export default function TeacherDiscussions() {
   const { currentUser } = useAuth();
@@ -223,7 +224,7 @@ export default function TeacherDiscussions() {
                     {d.body}
                   </p>
                   <div className="text-[11px] text-slate-400 pt-1">
-                    Posted by <span className="font-medium text-slate-700">{d.author_name}</span> • {new Date(d.created_at).toLocaleDateString()}
+                    Posted by <span className="font-medium text-slate-700">{d.author_name}</span> • {formatPhDate(d.created_at)}
                   </div>
                 </div>
               </div>
@@ -286,7 +287,7 @@ export default function TeacherDiscussions() {
                           </span>
                         )}
                       </div>
-                      <span className="text-[10px] text-slate-400 font-mono">{new Date(r.created_at).toLocaleTimeString()}</span>
+                      <span className="text-[10px] text-slate-400 font-mono">{formatPhTime(r.created_at)}</span>
                     </div>
                     <p className="text-xs text-slate-600 leading-relaxed pl-7">{r.body}</p>
                   </div>

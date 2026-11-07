@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CheckSquare, Search, Filter, Star, Clock, FileText, CheckCircle, X, ExternalLink, Award } from 'lucide-react';
+import { formatPhDateTime } from '../../utils/dateUtils';
 
 export default function TeacherSubmissions({ selectedAssignmentId }) {
   const [assignments, setAssignments] = useState([]);
@@ -234,7 +235,7 @@ export default function TeacherSubmissions({ selectedAssignmentId }) {
                         </div>
                       </td>
                       <td className="py-3.5 px-4 font-mono text-[11px] text-slate-500 whitespace-nowrap">
-                        {new Date(sub.submitted_at).toLocaleString()}
+                        {formatPhDateTime(sub.submitted_at)}
                       </td>
                       <td className="py-3.5 px-4">
                         {isGraded ? (

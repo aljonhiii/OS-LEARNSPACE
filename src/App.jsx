@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import AppShell from './components/layout/AppShell';
 import Login from './pages/auth/Login';
 import Unauthorized from './pages/auth/Unauthorized';
+import BrandLogo from './components/common/BrandLogo';
 import { Loader2, GraduationCap } from 'lucide-react';
 
 // Dashboards
@@ -85,11 +86,11 @@ function MainApp() {
   if (loading) {
     return (
       <div className="w-full min-h-screen bg-[#F0F4FA] flex flex-col items-center justify-center font-sans">
-        <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 mb-4 animate-bounce">
-          <GraduationCap className="w-7 h-7" />
+        <div className="mb-4 animate-pulse">
+          <BrandLogo variant="dark" className="h-14" />
         </div>
         <div className="flex items-center gap-2 text-slate-700 font-semibold text-sm">
-          <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+          <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
           <span>Verifying LearnSpace Session...</span>
         </div>
       </div>

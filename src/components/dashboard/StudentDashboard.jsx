@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BookOpen, Award, CheckCircle2, ArrowRight, Play, FileText, Clock, Sparkles } from 'lucide-react';
 import CountdownTimer from '../common/CountdownTimer';
 import MiniCalendar from '../common/MiniCalendar';
+import RealtimeActivityChart from '../common/RealtimeActivityChart';
 
 export default function StudentDashboard({ onNavigate }) {
   const [dashboardData, setDashboardData] = useState(null);
@@ -156,6 +157,47 @@ export default function StudentDashboard({ onNavigate }) {
         </div>
 
       </div>
+
+      {/* STUDY ACTIVITY CHART — Real-time & database-driven */}
+      <RealtimeActivityChart 
+        title="Study Activity"
+        subtitle="Weekly lesson completions and study time"
+        metricLabel="Minutes"
+        unit="m"
+        growthPercentage="+14.2%"
+        accentColor="#2563EB"
+        dataSets={dashboardData?.activityChart || {
+          'Week': [
+            { label: 'Mon', value: 45 },
+            { label: 'Tue', value: 90 },
+            { label: 'Wed', value: 65 },
+            { label: 'Thu', value: 110 },
+            { label: 'Fri', value: 140 },
+            { label: 'Sat', value: 75 },
+            { label: 'Sun', value: 160 }
+          ],
+          'Month': [
+            { label: 'Week 1', value: 380 },
+            { label: 'Week 2', value: 490 },
+            { label: 'Week 3', value: 610 },
+            { label: 'Week 4', value: 750 }
+          ],
+          'Year': [
+            { label: 'Jan', value: 1200 },
+            { label: 'Feb', value: 1450 },
+            { label: 'Mar', value: 1800 },
+            { label: 'Apr', value: 1600 },
+            { label: 'May', value: 2100 },
+            { label: 'Jun', value: 2400 },
+            { label: 'Jul', value: 2200 },
+            { label: 'Aug', value: 2600 },
+            { label: 'Sep', value: 2900 },
+            { label: 'Oct', value: 3200 },
+            { label: 'Nov', value: 3500 },
+            { label: 'Dec', value: 3800 }
+          ]
+        }}
+      />
 
       {/* 3. MY COURSES & CALENDAR ROW */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
